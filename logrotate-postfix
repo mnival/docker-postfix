@@ -1,0 +1,16 @@
+/var/log/postfix/mail.info
+/var/log/postfix/mail.warn
+/var/log/postfix/mail.err
+/var/log/postfix/mail.log
+{
+	rotate 4
+	weekly
+	missingok
+	notifempty
+	compress
+	delaycompress
+	sharedscripts
+	postrotate
+		killall -s HUP rsyslogd > /dev/null
+	endscript
+}

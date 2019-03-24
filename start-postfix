@@ -1,0 +1,45 @@
+#!/bin/bash
+
+trap "{ echo Stopping postfix; postfix stop; exit $?; }" EXIT TERM INT
+
+# Extract function package postfix in file /var/lib/dpkg/info/postfix.postinst
+myfqdn() {
+	myhostname=$(hostname --fqdn 2>/dev/null || echo "")
+	# If we don't have a name with a dot (which includes ""), then we have work.
+	if [ $myhostname = ${myhostname%.*} ]; then
+		# If it's empty, and we have /etc/hostname, try that.
+		if [ -z $myhostname ] && [ -r /etc/hostname ]; then
+			myhostname=$(cat /etc/hostname)
+		fi
+		# If we are still lacking a domain component, then try resolv.conf.
+		if [ $myhostname = ${myhostname%.*} ]; then
+			if [ -f /etc/resolv.conf ]; then
+				# The resolver uses the last one found, and ignores the rest
+				mydom=$(sed -n 's/^search[[:space:]]*\([^[:space:]]*\).*/\1/p;s/^domain[[:space:]]*\([^[:space:]]*\).*/\1/p' /etc/resolv.conf | tail -1)
+				myhostname="$myhostname${mydom:+.$mydom}"
+			else
+				myhostname="$myhostname.UNKNOWN"
+			fi
+		fi
+	fi
+	echo $myhostname
+}
+
+test -f /etc/postfix/main.cf || tar -C /etc/postfix -xzf /root/postfix-config.tgz
+test -f /etc/ssl/private/ssl-cert-snakeoil.key || env DEBIAN_FRONTEND=noninteractive make-ssl-cert generate-default-snakeoil
+
+if [ "x$(postconf -n myhostname)" == "x" ] || [ "x$(postconf -n mydomain)" == "x" ]
+then
+	myhostname=$(myfqdn)
+	mydomain=${myhostname#*.}
+	if [ "x$(postconf -n myhostname)" == "x" ]
+	then
+		postconf -e "myhostname=${myhostname}"
+	fi
+	if [ "x$(postconf -n mydomain)" == "x" ]
+	then
+		postconf -e "mydomain=${mydomain}"
+	fi
+fi
+
+exec postfix quick-start
