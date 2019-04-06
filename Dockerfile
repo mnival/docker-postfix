@@ -30,6 +30,9 @@ RUN tar -C /etc/postfix -czf /root/postfix-config.tgz . && \
 	tar -C /var/spool/postfix -czf /root/postfix-spool.tgz . && \
 	tar -C /var/lib/postfix -czf /root/postfix-data.tgz .
 
+RUN chmod -x /etc/cron.daily/* && \
+	chmod +x /etc/cron.daily/logrotate
+
 ADD supervisor-postfix.conf /etc/supervisor/conf.d/postfix.conf
 ADD supervisor-cron.conf /etc/supervisor/conf.d/cron.conf
 ADD supervisor-rsyslog.conf /etc/supervisor/conf.d/rsyslog.conf
