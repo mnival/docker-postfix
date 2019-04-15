@@ -3,7 +3,7 @@ FROM debian:stable-slim
 LABEL maintainer="Michael Nival <docker@mn-home.fr>" \
 	name="debian-postfix" \
 	description="Debian Stable with postfix, rsyslog, supervisor" \
-	docker.cmd=""
+	docker.cmd="docker run -d -p 25:25 --name mail mnival/debian-postfix"
 
 RUN addgroup --system postfix --gid 120 && \
 	addgroup --system postdrop --gid 121 && \
