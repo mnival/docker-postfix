@@ -11,6 +11,6 @@
 	delaycompress
 	sharedscripts
 	postrotate
-		kill -s SIGHUP $(supervisorctl status rsyslog | sed 's/.*pid \([0-9]*\), .*/\1/g')
+		kill -1 $(supervisorctl status rsyslog | sed 's/.*pid \([0-9]*\), .*/\1/g')
 	endscript
 }
