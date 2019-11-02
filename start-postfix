@@ -42,4 +42,5 @@ then
 	fi
 fi
 
-exec postfix quick-start
+exec postfix start-fg &
+wait
